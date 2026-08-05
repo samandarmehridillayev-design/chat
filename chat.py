@@ -1,6 +1,8 @@
 import logging
 import asyncio
+import os
 from collections import defaultdict
+from aiohttp import web
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart
 from aiogram.utils.keyboard import InlineKeyboardBuilder
@@ -15,7 +17,8 @@ from g4f.client import Client
 # ==========================================
 # ⚙️ SOZLAMALAR
 # ==========================================
-BOT_TOKEN = "8707856925:AAGJvwVNXc5a2eBhVM52vCsK9WQ9YQAXXsg"          # ← Yangi token qo'ying!
+# Tokenni xavfsizlik uchun Render Environment Variables'dan olish tavsiya etiladi
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8707856925:AAGJvwVNXc5a2eBhVM52vCsK9WQ9YQAXXsg")
 REQUIRED_CHANNEL = "@samandarmehridillayev"
 ADMIN_ID = 8004582786
 
@@ -40,7 +43,7 @@ class LuxuryText:
         if lang == "uz":
             return (
                 "╔══════════════════════════╗\n"
-                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮 influ  ║\n"
+                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮𝝿  ║\n"
                 "║      𝓟𝓻𝓮𝓶𝓲𝓾𝓶 𝓐𝓘 𝓑𝓸𝓽      ║\n"
                 "╚══════════════════════════╝\n\n"
                 "🪐  *Koinotning eng aqlli sun’iy intellektiga xush kelibsiz.*\n\n"
@@ -55,7 +58,7 @@ class LuxuryText:
         elif lang == "ru":
             return (
                 "╔══════════════════════════╗\n"
-                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮 influ  ║\n"
+                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮𝝿  ║\n"
                 "║      𝓟𝓻𝓮𝓶𝓲𝓾𝓶 𝓐𝓘 𝓑𝓸𝓽      ║\n"
                 "╚══════════════════════════╝\n\n"
                 "🪐  *Добро пожаловать в самый умный ИИ.*\n\n"
@@ -70,7 +73,7 @@ class LuxuryText:
         else:
             return (
                 "╔══════════════════════════╗\n"
-                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮influ  ║\n"
+                "║   ✨ 𝓢𝓪𝓶𝓪𝓷𝓭𝓪𝓻 𝓜𝓮𝓱𝓻𝓲𝓭𝓲𝓵𝓵𝓪𝔂𝓮𝝿  ║\n"
                 "║      𝓟𝓻𝓮𝓶𝓲𝓾𝓶 𝓐𝓘 𝓑𝓸𝓽      ║\n"
                 "╚══════════════════════════╝\n\n"
                 "🪐  *Welcome to the most intelligent AI system.*\n\n"
@@ -98,7 +101,7 @@ class LuxuryText:
             "╔══════════════════════════╗\n"
             "║   🚀  𝓝𝓮𝔀  𝓓𝓪𝔂 • 𝓝𝓮𝔀  𝓘𝓭𝓮𝓪𝓼  ║\n"
             "╚══════════════════════════╝\n\n"
-            "🧠  *Bugun miyangizda yangi savollar bormi?*\n\n"
+            "🧠  Bugun miyangizda yangi savollar bormi?\n\n"
             "Men doim shu yerda —\n"
             "chuqur fikrlar, aniq javoblar va ilhom uchun.\n\n"
             "✨  Keling, bugun ham biror narsani kashf etamiz."
@@ -111,7 +114,7 @@ class BotStates(StatesGroup):
 
 
 # ==========================================
-# 🛑 OBUNA
+# 🛑 OBUNA TEKSHIRUVI
 # ==========================================
 async def check_subscription(user_id: int) -> bool:
     try:
@@ -137,7 +140,7 @@ def get_sub_keyboard(lang: str) -> InlineKeyboardBuilder:
 
 
 # ==========================================
-# 📥 START + TIL
+# 📥 START + TIL TANLASH
 # ==========================================
 @dp.message(CommandStart())
 async def start_cmd(message: types.Message, state: FSMContext):
@@ -232,7 +235,7 @@ async def ai_chat_handler(message: types.Message):
 
         messages = [{"role": "system", "content": system_prompt}] + history
 
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         response = await loop.run_in_executor(
             None,
             lambda: ai_client.chat.completions.create(
@@ -247,17 +250,16 @@ async def ai_chat_handler(message: types.Message):
         history.append({"role": "assistant", "content": ai_reply})
         CHAT_HISTORY[user_id] = history
 
-        # Hashamatli javob dizayni
         final_text = (
             "╔══════════════════════════╗\n"
             "║      🤖  𝓐𝓘  𝓡𝓮𝓼𝓹𝓸𝓷𝓼𝓮      ║\n"
             "╚══════════════════════════╝\n\n"
             f"{ai_reply}\n\n"
             "━━━━━━━━━━━━━━━━━━━━\n"
-            "✨  _Samandar Mehridillayev • Premium AI_"
+            "✨  Samandar Mehridillayev • Premium AI"
         )
 
-        await waiting.edit_text(final_text, parse_mode="Markdown")
+        await waiting.edit_text(final_text, parse_mode=None)
 
     except Exception as e:
         logging.error(f"AI Error: {e}")
@@ -276,19 +278,38 @@ async def send_daily_reminder():
     text = LuxuryText.daily()
     for user_id in list(USERS_DB.keys()):
         try:
-            await bot.send_message(chat_id=user_id, text=text, parse_mode="Markdown")
+            await bot.send_message(chat_id=user_id, text=text)
             await asyncio.sleep(0.07)
         except Exception:
             pass
 
 
 # ==========================================
+# 🌐 RENDER UCHUN DUMMY WEB SERVER
+# ==========================================
+async def handle(request):
+    return web.Response(text="Bot is running smoothly on Render Free Tier!")
+
+
+# ==========================================
 # 🚀 ISHGA TUSHIRISH
 # ==========================================
 async def main():
+    # Render uchun HTTP portni ochish
+    app = web.Application()
+    app.router.add_get("/", handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    port = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+
+    # Rejalashtirgichni ishga tushirish
     scheduler.add_job(send_daily_reminder, "cron", hour=9, minute=0)
     scheduler.start()
-    print("✨ Premium AI Bot muvaffaqiyatli ishga tushdi!")
+
+    print("✨ Premium AI Bot Render Bepul servisida ishga tushdi!")
     await dp.start_polling(bot)
 
 
